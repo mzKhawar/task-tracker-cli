@@ -16,7 +16,7 @@ type task struct {
 	ID          int       `json:"id"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"completedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
@@ -24,12 +24,10 @@ const (
 	TODO        = "todo"
 	IN_PROGRESS = "in progress"
 	DONE        = "done"
+	FILENAME    = "tasks.json"
 )
 
-const FILENAME = "tasks.json"
-
 func main() {
-	// step 1: check if file exists; create if it doesn't
 	if _, err := os.Stat(FILENAME); errors.Is(err, os.ErrNotExist) {
 		_, createErr := os.Create(FILENAME)
 		if createErr != nil {
@@ -37,20 +35,17 @@ func main() {
 		}
 	}
 
-	// step 2: load contents of file
 	tasks, err := load(FILENAME)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var nextInt int
 	if len(tasks) == 0 {
 		nextInt = 1
 	} else {
 		nextInt = tasks[len(tasks)-1].ID + 1
 	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// step 3:
 
 	if len(os.Args) < 2 {
 		fmt.Println("Invalid argument")
@@ -78,7 +73,10 @@ func main() {
 		encoder.SetIndent("", "	")
 
 		if len(os.Args) == 2 {
-			encoder.Encode(tasks)
+			if err := encoder.Encode(tasks); err != nil {
+				log.Fatal(err)
+				return
+			}
 		}
 		if len(os.Args) == 3 {
 			arg := os.Args[2]
@@ -142,6 +140,7 @@ func main() {
 func load(fileName string) ([]task, error) {
 	var tasks []task
 	file, openErr := os.Open(fileName)
+	defer file.Close()
 	if openErr != nil {
 		log.Fatal(openErr)
 	}
@@ -171,7 +170,7 @@ func get(id int, tasks []task) (*task, bool) {
 			return &tasks[i], true
 		}
 	}
-	return &task{}, false
+	return nil, false
 }
 
 func getDone(tasks []task) []task {

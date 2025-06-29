@@ -78,7 +78,7 @@ func main() {
 			log.Fatalf("format id string to int: %v", err)
 		}
 		tsk, found := Get(id, tasks)
-		if found == false {
+		if !found {
 			fmt.Printf("Task not found with ID: %v\n", id)
 			return
 		}
@@ -105,7 +105,7 @@ func main() {
 			log.Fatalf("format id string to int: %v", err)
 		}
 		tsk, found := Get(id, tasks)
-		if found == false {
+		if !found {
 			fmt.Printf("Task not found with ID: %v\n", id)
 			return
 		}
